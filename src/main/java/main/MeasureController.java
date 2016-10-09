@@ -6,8 +6,10 @@ import java.net.URISyntaxException;
 import main.storage.PressureRepository;
 import main.storage.TemperatureRepository;
 import main.storage.pojo.Pressure;
+import main.storage.pojo.TempAndPressure;
 import main.storage.pojo.Temperature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,24 +25,6 @@ public class MeasureController {
 
     @Autowired
     private PressureRepository  pressureRepository;
-
-    @RequestMapping("/pressure")
-    public String pressure(@RequestParam String value) {
-        Pressure pressure=new Pressure();
-        pressure.setDate(getCurrentDT());
-        pressure.setValue(value);
-        pressureRepository.save(pressure);
-        return getCurrentDT();
-    }
-
-    @RequestMapping("/temperature")
-    public String temperature(@RequestParam String value) {
-        Temperature temperature=new Temperature();
-        temperature.setDate(getCurrentDT());
-        temperature.setValue(value);
-        temperatureRepository.save(temperature);
-        return getCurrentDT();
-    }
 
     @RequestMapping("/allData")
     public String data()
@@ -66,6 +50,29 @@ public class MeasureController {
             e.printStackTrace();
         }
         return "";
+    }
+
+    @Scheduled(cron = "0 */10 * * * *")
+    public void getCurrentTempAndPressure()
+    {
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            TempAndPressure tempAndPressure= restTemplate.getForObject(new URI("http://192.168.0.111/"),TempAndPressure.class);
+
+            Pressure pressure=new Pressure();
+            String currentDT = getCurrentDT();
+            System.out.println("New measure with date: "+currentDT);
+            pressure.setDate(currentDT);
+            pressure.setValue(tempAndPressure.getPress());
+            pressureRepository.save(pressure);
+
+            Temperature temperature=new Temperature();
+            temperature.setDate(currentDT);
+            temperature.setValue(tempAndPressure.getTemp());
+            temperatureRepository.save(temperature);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 
 }
