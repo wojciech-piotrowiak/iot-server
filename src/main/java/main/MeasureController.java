@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 
-
 @RestController
 public class MeasureController {
 
@@ -24,28 +23,26 @@ public class MeasureController {
     private TemperatureRepository temperatureRepository;
 
     @Autowired
-    private PressureRepository  pressureRepository;
+    private PressureRepository pressureRepository;
 
     @RequestMapping("/allData")
-    public String data()
-    {
-        String all ="";
-      for(Temperature t:  temperatureRepository.findAll())
-      {
-          all+=t.getDate()+" tmp "+t.getValue();
-      }
+    public String data() {
+        String all = "";
+        for (Temperature t : temperatureRepository.findAll()) {
+            all += t.getDate() + " tmp " + t.getValue();
+        }
 
-        for(Pressure p:pressureRepository.findAll())
-        {all+=p.getDate()+" pressure "+p.getValue();}
+        for (Pressure p : pressureRepository.findAll()) {
+            all += p.getDate() + " pressure " + p.getValue();
+        }
 
         return all;
     }
 
-    public String getCurrentDT()
-    {
+    public String getCurrentDT() {
         RestTemplate restTemplate = new RestTemplate();
         try {
-           return restTemplate.getForObject(new URI("http://www.timeapi.org/utc/now"),String.class);
+            return restTemplate.getForObject(new URI("http://www.timeapi.org/utc/now"), String.class);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
@@ -53,20 +50,19 @@ public class MeasureController {
     }
 
     @Scheduled(cron = "0 */10 * * * *")
-    public void getCurrentTempAndPressure()
-    {
+    public void getCurrentTempAndPressure() {
         RestTemplate restTemplate = new RestTemplate();
         try {
-            TempAndPressure tempAndPressure= restTemplate.getForObject(new URI("http://192.168.0.111/"),TempAndPressure.class);
+            TempAndPressure tempAndPressure = restTemplate.getForObject(new URI("http://192.168.0.111/"), TempAndPressure.class);
 
-            Pressure pressure=new Pressure();
+            Pressure pressure = new Pressure();
             String currentDT = getCurrentDT();
-            System.out.println("New measure with date: "+currentDT);
+            System.out.println("New measure with date: " + currentDT);
             pressure.setDate(currentDT);
             pressure.setValue(tempAndPressure.getPress());
             pressureRepository.save(pressure);
 
-            Temperature temperature=new Temperature();
+            Temperature temperature = new Temperature();
             temperature.setDate(currentDT);
             temperature.setValue(tempAndPressure.getTemp());
             temperatureRepository.save(temperature);
