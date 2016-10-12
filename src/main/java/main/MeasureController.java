@@ -1,5 +1,6 @@
 package main;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -9,11 +10,14 @@ import main.storage.pojo.Pressure;
 import main.storage.pojo.TempAndPressure;
 import main.storage.pojo.Temperature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+
+import javax.servlet.http.HttpServletResponse;
 
 
 @RestController
@@ -47,6 +51,24 @@ public class MeasureController {
             e.printStackTrace();
         }
         return "";
+    }
+
+    @RequestMapping("/graph")
+    void getGraph(HttpServletResponse response) throws IOException {
+        String values="";
+        int count=0;
+        String c="|";
+        for (Temperature t : temperatureRepository.findAll()) {
+            values+=","+t.getValue();
+            c+=count+"|";
+            count++;
+        }
+        values=values.substring(1);
+        //http://chart.apis.google.com/chart?chs=500x300&cht=lc&chd=t:26.60,26.60,26.30,26.60,26.60
+        // &chds=26.30,26.60&chco=FF0000&chls=6&chxt=x,y&chxl=0:|0|1|2|3|4|1:||15|20|30&chf=bg,s,efefef
+        response.sendRedirect("http://chart.apis.google.com/chart?chs=500x300" +
+                "&cht=lc&chd=t:" +values+
+                "&chco=FF0000&chls=6&chxt=x,y&chxl=0:"+c+"1:||15|20|30&chf=bg,s,efefef");
     }
 
     @Scheduled(cron = "0 */10 * * * *")
