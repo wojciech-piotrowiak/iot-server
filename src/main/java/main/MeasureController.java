@@ -3,6 +3,8 @@ package main;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -56,25 +58,25 @@ public class MeasureController {
         return "";
     }
 
-    @RequestMapping("/graph")
+    @RequestMapping("/tempGraph")
     void getGraph(HttpServletResponse response) throws IOException {
-        int count=0;
         String c="|";
         List<Temperature> temperatureList=new ArrayList<>();
         for (Temperature t : temperatureRepository.findAll()) {
             temperatureList.add(t);
-            c+=count+"|";
-            count++;
+            ZonedDateTime parse = ZonedDateTime.parse(t.getDate()).plusHours(2);
+            c+=parse.getHour()+":"+parse.getMinute()+"|";
         }
         String values = temperatureList.stream().map(t -> t.getValue()).collect(Collectors.joining(","));
         String minMax = getMinMax(temperatureList);
 
+        String scale=getScale(temperatureList);
 
         //http://chart.apis.google.com/chart?chs=500x300&cht=lc&chd=t:26.60,26.60,26.30,26.60,26.60
         // &chds=26.30,26.60&chco=FF0000&chls=6&chxt=x,y&chxl=0:|0|1|2|3|4|1:||15|20|30&chf=bg,s,efefef
-        response.sendRedirect("http://chart.apis.google.com/chart?chs=500x300" +
+        response.sendRedirect("http://chart.apis.google.com/chart?chs=600x200" +
                 "&cht=lc&chd=t:" +values+minMax+
-                "&chco=FF0000&chls=6&chxt=x,y&chxl=0:"+c+"1:||15|20|30&chf=bg,s,efefef");
+                "&chco=FF0000&chls=6&chxt=x,y&chxl=0:"+c+"1:||"+scale+"&chf=bg,s,efefef");
     }
 
     private String getMinMax(List<Temperature> temperatureList) {
@@ -84,7 +86,13 @@ public class MeasureController {
         return minMax;
     }
 
-    @Scheduled(cron = "0 */10 * * * *")
+    private String getScale(List<Temperature> temperatureList) {
+        DoubleSummaryStatistics stat = temperatureList.stream().mapToDouble(t -> Double.valueOf(t.getValue())).summaryStatistics();
+        String scale=(stat.getMin()-2)+"|"+(stat.getMax()+2);
+        return scale;
+    }
+
+    @Scheduled(cron = "0 */1 * * * *")
     public void getCurrentTempAndPressure() {
         RestTemplate restTemplate = new RestTemplate();
         try {
