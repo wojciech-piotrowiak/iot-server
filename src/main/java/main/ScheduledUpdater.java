@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 
 
 @RestController
-public class MeasureController {
+public class ScheduledUpdater {
 
     @Autowired
     private TemperatureRepository temperatureRepository;
@@ -34,21 +34,7 @@ public class MeasureController {
     @Autowired
     private PressureRepository pressureRepository;
 
-    @RequestMapping("/allData")
-    public String data() {
-        String all = "";
-        for (Temperature t : temperatureRepository.findAll()) {
-            all += t.getDate() + " tmp " + t.getValue();
-        }
-
-        for (Pressure p : pressureRepository.findAll()) {
-            all += p.getDate() + " pressure " + p.getValue();
-        }
-
-        return all;
-    }
-
-    public String getCurrentDT() {
+    private String getCurrentDT() {
         RestTemplate restTemplate = new RestTemplate();
         try {
             return restTemplate.getForObject(new URI("http://www.timeapi.org/utc/now"), String.class);
@@ -67,30 +53,9 @@ public class MeasureController {
             ZonedDateTime parse = ZonedDateTime.parse(t.getDate()).plusHours(2);
             c+=parse.getHour()+":"+parse.getMinute()+"|";
         }
-        String values = temperatureList.stream().map(t -> t.getValue()).collect(Collectors.joining(","));
-        String minMax = getMinMax(temperatureList);
 
-        String scale=getScale(temperatureList);
-
-        //http://chart.apis.google.com/chart?chs=500x300&cht=lc&chd=t:26.60,26.60,26.30,26.60,26.60
-        // &chds=26.30,26.60&chco=FF0000&chls=6&chxt=x,y&chxl=0:|0|1|2|3|4|1:||15|20|30&chf=bg,s,efefef
-        response.sendRedirect("http://chart.apis.google.com/chart?chs=600x200" +
-                "&cht=lc&chd=t:" +values+minMax+
-                "&chco=FF0000&chls=6&chxt=x,y&chxl=0:"+c+"1:||"+scale+"&chf=bg,s,efefef");
     }
 
-    private String getMinMax(List<Temperature> temperatureList) {
-        String minMax="&chds=";
-        DoubleSummaryStatistics stat = temperatureList.stream().mapToDouble(t -> Double.valueOf(t.getValue())).summaryStatistics();
-        minMax+=stat.getMin()+","+stat.getMax();
-        return minMax;
-    }
-
-    private String getScale(List<Temperature> temperatureList) {
-        DoubleSummaryStatistics stat = temperatureList.stream().mapToDouble(t -> Double.valueOf(t.getValue())).summaryStatistics();
-        String scale=(stat.getMin()-2)+"|"+(stat.getMax()+2);
-        return scale;
-    }
 
     @Scheduled(cron = "0 */1 * * * *")
     public void getCurrentTempAndPressure() {

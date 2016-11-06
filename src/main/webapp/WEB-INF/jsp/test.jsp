@@ -6,16 +6,15 @@
       google.charts.setOnLoadCallback(drawChart);
 
       function drawChart() {
-        var data = google.visualization.arrayToDataTable([
-          ['Year', 'Sales', 'Expenses'],
-          ['2004',  1000,      400],
-          ['2005',  1170,      460],
-          ['2006',  660,       1120],
-          ['2007',  1030,      540]
-        ]);
+
+      var data = new google.visualization.DataTable();
+              data.addColumn('string', 'Czas');
+              data.addColumn('number', 'Cisnienie');
+              data.addColumn('number', 'Temperatura');
+                data.addRows([${message}]);
 
         var options = {
-          title: 'Company Performance',
+          title: 'Domowa pogoda',
           curveType: 'function',
           legend: { position: 'bottom' }
         };
@@ -27,6 +26,7 @@
     </script>
   </head>
   <body>
+    <h1>${message}</h1>
     <div id="curve_chart" style="width: 900px; height: 500px"></div>
   </body>
 </html>
