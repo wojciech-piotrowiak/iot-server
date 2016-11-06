@@ -44,19 +44,6 @@ public class ScheduledUpdater {
         return "";
     }
 
-    @RequestMapping("/tempGraph")
-    void getGraph(HttpServletResponse response) throws IOException {
-        String c="|";
-        List<Temperature> temperatureList=new ArrayList<>();
-        for (Temperature t : temperatureRepository.findAll()) {
-            temperatureList.add(t);
-            ZonedDateTime parse = ZonedDateTime.parse(t.getDate()).plusHours(2);
-            c+=parse.getHour()+":"+parse.getMinute()+"|";
-        }
-
-    }
-
-
     @Scheduled(cron = "0 */1 * * * *")
     public void getCurrentTempAndPressure() {
         RestTemplate restTemplate = new RestTemplate();
@@ -78,5 +65,4 @@ public class ScheduledUpdater {
             e.printStackTrace();
         }
     }
-
 }
