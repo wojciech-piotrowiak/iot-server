@@ -52,7 +52,7 @@ public class Mvc {
     }
 
     private String getDate(String t) {
-        ZonedDateTime parse = ZonedDateTime.parse(t).plusHours(2);
+        ZonedDateTime parse = ZonedDateTime.parse(t);
         return parse.getDayOfWeek() + " " + parse.getHour() + ":" + parse.getMinute();
     }
 
