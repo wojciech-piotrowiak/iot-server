@@ -45,7 +45,7 @@ public class ScheduledUpdater {
         return "";
     }
 
-    @Scheduled(cron = "0 */1 * * * *")
+    @Scheduled(cron = "0 */15 * * * *")
     public void getCurrentTempAndPressure() {
         RestTemplate restTemplate = new RestTemplate();
         try {
@@ -74,7 +74,7 @@ public class ScheduledUpdater {
         }
     }
 
-    //@Scheduled(cron = "0 */5 * * * *")
+    @Scheduled(cron = "0 */5 * * * *")
     public void getPresence() {
         try {
             String currentDT = getCurrentDT();
