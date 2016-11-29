@@ -1,7 +1,6 @@
-package main.storage;
+package main.storage.repositories;
 
-import main.storage.pojo.Pressure;
-import main.storage.pojo.Temperature;
+import main.storage.entities.Temperature;
 import org.springframework.data.repository.CrudRepository;
 
 public interface TemperatureRepository extends CrudRepository<Temperature, Long> {

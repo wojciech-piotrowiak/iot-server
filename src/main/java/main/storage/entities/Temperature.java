@@ -1,4 +1,4 @@
-package main.storage.pojo;
+package main.storage.entities;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -6,10 +6,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class Pressure {
+public class Temperature {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
-    String id;
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    Long id;
     private String value;
     private String date;
 

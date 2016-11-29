@@ -1,4 +1,4 @@
-package main.storage.pojo;
+package main.storage.entities;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

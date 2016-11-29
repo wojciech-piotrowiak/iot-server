@@ -1,17 +1,19 @@
-package main.storage.pojo;
+package main.storage.entities;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+
 @Entity
-public class Temperature {
+public class Humidity {
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy= GenerationType.AUTO)
     Long id;
     private String value;
     private String date;
+
 
     public String getValue() {
         return value;
@@ -29,3 +31,4 @@ public class Temperature {
         this.date = date;
     }
 }
+

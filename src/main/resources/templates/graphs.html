@@ -53,11 +53,38 @@
           }
 
     </script>
+    <script th:inline="javascript">
+          google.charts.load('current', {'packages':['corechart']});
+          google.charts.setOnLoadCallback(drawChart);
+
+          function drawChart() {
+
+          var data = new google.visualization.DataTable();
+                  data.addColumn('string', 'Czas');
+                  data.addColumn('number', 'Wilgotność');
+
+         var press = [[${humidity}]]
+
+                  data.addRows(eval(unescape(press)));
+
+            var options = {
+              title: 'Wilgotność',
+              curveType: 'function',
+              legend: { position: 'bottom' }
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('hum_chart'));
+
+            chart.draw(data, options);
+          }
+
+    </script>
 </head>
 <body>
-<h1 id="mom" th:text="${momAtHome}"></h1>
-<h1 id="dad "th:text="${dadAtHome}"></h1>
+<h1 th:text="${momAtHome}"></h1>
+<h1 th:text="${dadAtHome}"></h1>
 <div id="temp_chart" style="width: 900px; height: 500px"></div>
 <div id="press_chart" style="width: 900px; height: 500px"></div>
+<div id="hum_chart" style="width: 900px; height: 500px"></div>
 </body>
 </html>

@@ -1,9 +1,11 @@
 package main;
 
-import main.storage.PressureRepository;
-import main.storage.TemperatureRepository;
-import main.storage.pojo.Pressure;
-import main.storage.pojo.Temperature;
+import main.storage.entities.Humidity;
+import main.storage.repositories.HumidityRepository;
+import main.storage.repositories.PressureRepository;
+import main.storage.repositories.TemperatureRepository;
+import main.storage.entities.Pressure;
+import main.storage.entities.Temperature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,12 +28,16 @@ public class Mvc {
     @Autowired
     private PressureRepository pressureRepository;
 
+    @Autowired
+    private HumidityRepository humidityRepository;
+
 
     @RequestMapping("/")
     public String listProducts(Model model) {
 
         model.addAttribute("temperature", getTemp());
         model.addAttribute("pressure", getPressure());
+        model.addAttribute("humidity", getHumidity());
         model.addAttribute("momAtHome", isMomAtHome());
         model.addAttribute("dadAtHome", isDadAtHome());
 
@@ -56,10 +62,19 @@ public class Mvc {
         return String.format("[%s]", values.stream().collect(Collectors.joining(",")));
     }
 
+    public String getHumidity() {
+        List<String> values = new ArrayList<>();
+        for (Humidity p : humidityRepository.findAll()) {
+                values.add(String.format("['%s', %s]", parseDate(p.getDate()), p.getValue()));
+        }
+
+        return String.format("[%s]", values.stream().collect(Collectors.joining(",")));
+    }
+
     private String isMomAtHome() {
         try {
             InetAddress aga = InetAddress.getByAddress(new byte[]{(byte) 192, (byte) 168, 0, 105});
-            return aga.isReachable(500) ? "Mama w domu ":"";
+            return aga.isReachable(500) ? "Mama w domu " : "";
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -71,7 +86,7 @@ public class Mvc {
     private String isDadAtHome() {
         try {
             InetAddress wojtek = InetAddress.getByAddress(new byte[]{(byte) 192, (byte) 168, 0, 103});
-            return wojtek.isReachable(500) ? "Tata w domu":"";
+            return wojtek.isReachable(500) ? "Tata w domu" : "";
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
