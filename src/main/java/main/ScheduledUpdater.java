@@ -1,5 +1,8 @@
 package main;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import main.storage.entities.Humidity;
 import main.storage.entities.Presence;
 import main.storage.entities.Pressure;
@@ -19,6 +22,8 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.Iterator;
+import java.util.Map;
 
 @Component
 public class ScheduledUpdater {
@@ -35,12 +40,28 @@ public class ScheduledUpdater {
     @Autowired
     private HumidityRepository humidityRepository;
 
-    private String getCurrentDT() {
+    private String getCurrentDT() throws IOException {
         RestTemplate restTemplate = new RestTemplate();
         try {
-            return restTemplate.getForObject(new URI("http://www.timeapi.org/cet/now"), String.class);
+            return parseDate(restTemplate.getForObject(new URI("https://script.google.com/macros/s/AKfycbyd5AcbAnWi2Yn0xhFRbyzS4qMq1VucMVgVvhul5XqS9HkAyJY/exec?tz=Europe/Warsaw"), String.class));
         } catch (URISyntaxException e) {
             e.printStackTrace();
+        }
+        return "";
+    }
+
+    private String parseDate(String input) throws IOException {
+        JsonFactory factory = new JsonFactory();
+
+        ObjectMapper mapper = new ObjectMapper(factory);
+        JsonNode rootNode = mapper.readTree(input);
+
+        Iterator<Map.Entry<String, JsonNode>> fieldsIterator = rootNode.fields();
+        while (fieldsIterator.hasNext()) {
+            Map.Entry<String, JsonNode> field = fieldsIterator.next();
+            if ("fulldate".contentEquals(field.getKey())) {
+                return field.getValue().textValue();
+            }
         }
         return "";
     }
@@ -69,7 +90,7 @@ public class ScheduledUpdater {
                 humidity.setValue(espResponse.getHum());
                 humidityRepository.save(humidity);
             }
-        } catch (URISyntaxException e) {
+        } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
     }

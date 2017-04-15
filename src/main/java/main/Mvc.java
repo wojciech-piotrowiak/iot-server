@@ -1,11 +1,11 @@
 package main;
 
 import main.storage.entities.Humidity;
+import main.storage.entities.Pressure;
+import main.storage.entities.Temperature;
 import main.storage.repositories.HumidityRepository;
 import main.storage.repositories.PressureRepository;
 import main.storage.repositories.TemperatureRepository;
-import main.storage.entities.Pressure;
-import main.storage.entities.Temperature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,7 +66,7 @@ public class Mvc {
     public String getHumidity() {
         List<String> values = new ArrayList<>();
         for (Humidity p : humidityRepository.findAll()) {
-                values.add(String.format("['%s', %s]", parseDate(p.getDate()), p.getValue()));
+            values.add(String.format("['%s', %s]", parseDate(p.getDate()), p.getValue()));
         }
 
         return String.format("[%s]", values.stream().collect(Collectors.joining(",")));
@@ -96,7 +97,8 @@ public class Mvc {
     }
 
     private String parseDate(String t) {
-        ZonedDateTime parse = ZonedDateTime.parse(t);
-        return parse.getDayOfWeek() + " " + parse.getHour() + ":" + parse.getMinute();
+        DateTimeFormatter rfc_1123_date_time = DateTimeFormatter.RFC_1123_DATE_TIME;
+        ZonedDateTime parse = ZonedDateTime.parse(t, rfc_1123_date_time);
+        return String.format("%s %s:%s", parse.getDayOfWeek(), parse.getHour(), parse.getMinute());
     }
 }
