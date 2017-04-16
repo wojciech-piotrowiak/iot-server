@@ -9,14 +9,16 @@ import main.storage.repositories.HumidityRepository;
 import main.storage.repositories.PresenceRepository;
 import main.storage.repositories.PressureRepository;
 import main.storage.repositories.TemperatureRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
@@ -24,16 +26,15 @@ import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+@Component
 public class DefaultDataService implements DataService {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultDataService.class);
     @Autowired
     private TemperatureRepository temperatureRepository;
-
     @Autowired
     private PressureRepository pressureRepository;
-
     @Autowired
     private PresenceRepository presenceRepository;
-
     @Autowired
     private HumidityRepository humidityRepository;
 
@@ -42,10 +43,8 @@ public class DefaultDataService implements DataService {
         try {
             InetAddress aga = InetAddress.getByAddress(new byte[]{(byte) 192, (byte) 168, 0, 105});
             return aga.isReachable(500);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Could not check presence of mom", e);
         }
         return false;
     }
@@ -55,10 +54,8 @@ public class DefaultDataService implements DataService {
         try {
             InetAddress wojtek = InetAddress.getByAddress(new byte[]{(byte) 192, (byte) 168, 0, 103});
             return wojtek.isReachable(500);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Could not check presence of dad", e);
         }
         return false;
     }
@@ -76,7 +73,7 @@ public class DefaultDataService implements DataService {
     public void saveMeasurements(EspResponse espResponse) {
         Pressure pressure = new Pressure();
         String currentDT = getCurrentDT();
-        System.out.println("New measure with date: " + currentDT);
+        logger.info("New measure with date: " + currentDT);
         pressure.setDate(currentDT);
         pressure.setValue(espResponse.getPress());
         pressureRepository.save(pressure);
@@ -132,7 +129,7 @@ public class DefaultDataService implements DataService {
         try {
             return parseAPIDate(restTemplate.getForObject(new URI("https://script.google.com/macros/s/AKfycbyd5AcbAnWi2Yn0xhFRbyzS4qMq1VucMVgVvhul5XqS9HkAyJY/exec?tz=Europe/Warsaw"), String.class));
         } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
+            logger.error("Could not get current dateTime", e);
         }
         return "";
     }
