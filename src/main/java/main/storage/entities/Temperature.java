@@ -6,7 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class Temperature {
+public class Temperature implements ValueRecord {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     Long id;

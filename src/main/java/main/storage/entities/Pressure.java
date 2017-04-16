@@ -6,7 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class Pressure {
+public class Pressure implements ValueRecord {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     String id;

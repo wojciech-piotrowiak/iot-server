@@ -1,8 +1,6 @@
 package main;
 
-import main.storage.entities.Humidity;
-import main.storage.entities.Pressure;
-import main.storage.entities.Temperature;
+import main.storage.entities.ValueRecord;
 import main.storage.repositories.HumidityRepository;
 import main.storage.repositories.PressureRepository;
 import main.storage.repositories.TemperatureRepository;
@@ -16,8 +14,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Controller
@@ -46,30 +43,27 @@ public class Mvc {
     }
 
     public String getTemp() {
-        List<String> values = new ArrayList<>();
-        for (Temperature t : temperatureRepository.findAll()) {
-            values.add(String.format("['%s', %s]", parseDate(t.getDate()), t.getValue()));
-        }
-
-        return String.format("[%s]", values.stream().collect(Collectors.joining(",")));
+        return temperatureRepository.streamAll().map(this::getEntry)
+                .collect(getJoining());
     }
 
-    public String getPressure() {
-        List<String> values = new ArrayList<>();
-        for (Pressure p : pressureRepository.findAll()) {
-            values.add(String.format("['%s', %s]", parseDate(p.getDate()), p.getValue()));
-        }
 
-        return String.format("[%s]", values.stream().collect(Collectors.joining(",")));
+    public String getPressure() {
+        return pressureRepository.streamAll().map(this::getEntry)
+                .collect(getJoining());
     }
 
     public String getHumidity() {
-        List<String> values = new ArrayList<>();
-        for (Humidity p : humidityRepository.findAll()) {
-            values.add(String.format("['%s', %s]", parseDate(p.getDate()), p.getValue()));
-        }
+        return humidityRepository.streamAll().map(this::getEntry)
+                .collect(getJoining());
+    }
 
-        return String.format("[%s]", values.stream().collect(Collectors.joining(",")));
+    private Collector<CharSequence, ?, String> getJoining() {
+        return Collectors.joining(",", "[", "]");
+    }
+
+    private String getEntry(ValueRecord t) {
+        return String.format("['%s', %s]", parseDate(t.getDate()), t.getValue());
     }
 
     private String isMomAtHome() {

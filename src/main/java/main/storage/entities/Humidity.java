@@ -7,7 +7,7 @@ import javax.persistence.Id;
 
 
 @Entity
-public class Humidity {
+public class Humidity implements ValueRecord {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     Long id;
